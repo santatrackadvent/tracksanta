@@ -61,7 +61,7 @@
       z-index: 999;
       background-color: rgba(255, 255, 255, 0.8);
       padding: 10px;
-      border-radius: 5px;
+      borderRadius: 5px;
       display: none;
     }
 
@@ -677,30 +677,31 @@ function markCountry(lat, lng) {
 }
 
 function startSantaTour() {
-  var now = new Date();
-  var startDateTime = new Date('2024-12-24T11:00:00');
-  var endDateTime = new Date('2024-12-25T12:00:00');
+  var countdownDate = new Date("December 24, 2024 11:00:00").getTime();
+  var countdownElement = document.getElementById('countdown');
 
-  // Vérifier si nous sommes dans la plage horaire de la tournée
-  if (now >= startDateTime && now <= endDateTime) {
-    // Vérifier si la tournée n'a pas déjà commencé en consultant le stockage local
-    var tourneeEnCours = localStorage.getItem('tourneeEnCours') === 'true';
+  function updateCountdown() {
+    var now = new Date().getTime();
+    var distance = countdownDate - now;
 
-    if (!tourneeEnCours) {
+    if (distance > 0) {
+      var days = Math.floor(distance / (24 * 60 * 60 * 1000));
+      var hours = Math.floor((distance % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+      var minutes = Math.floor((distance % (60 * 60 * 1000)) / (60 * 1000));
+      var seconds = Math.floor((distance % (60 * 1000)) / 1000);
+
+      countdownElement.innerHTML = 'Départ dans ' + days + ' jours, ' + hours + ' heures, ' + minutes + ' minutes et ' + seconds + ' secondes...';
+      setTimeout(updateCountdown, 1000);
+    } else {
+      countdownElement.innerHTML = '';
+
       // Début de la tournée
       markCountry(stopPoints[0][0], stopPoints[0][1]);
       animateSanta(90, 0, stopPoints[0][0], stopPoints[0][1], 145, true); // 2 minutes et 25 secondes
-
-      // Enregistrez l'état de la tournée dans le stockage local
-      localStorage.setItem('tourneeEnCours', 'true');
-    } else {
-      // La tournée est déjà en cours, reprenez-la depuis le début
-      animateSanta(90, 0, stopPoints[0][0], stopPoints[0][1], 145, true);
     }
-  } else {
-    // La tournée n'a pas encore commencé ou est déjà terminée
-    console.log("La tournée n'est pas en cours actuellement.");
   }
+
+  updateCountdown();
 }
 
 function startCountdown(seconds) {
@@ -744,7 +745,29 @@ function startArrivalCountdown(lat, lng, cityName, countryName) {
   updateArrivalCountdown();
 }
 
-startSantaTour();
-</script>
+function startPause(lat, lng) {
+  var pauseDuration = 60; // Pause d'une minute
+  var countdownElement = document.getElementById('countdown');
+
+  function updatePauseCountdown() {
+    countdownElement.innerHTML = 'Pause d\'1 minute à ' + lat + ', ' + lng + '...';
+    countdownElement.style.color = 'red';
+    pauseDuration--;
+
+    if (pauseDuration >= 0) {
+      setTimeout(updatePauseCountdown, 1000
+      );
+        } else {
+          countdownElement.style.color = 'black'; // Revenir à la couleur normale
+          countdownElement.innerHTML = '';
+          animateSanta(lat, lng, stopPoints[0][0], stopPoints[0][1], 145, false); // Reprendre la tournée après la pause
+        }
+      }
+
+      updatePauseCountdown();
+    }
+
+    startSantaTour();
+  </script>
 </body>
 </html>
